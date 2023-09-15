@@ -1,7 +1,7 @@
 
 Breve descrição do grupo
 
-* Turno: [LM]XX
+* Turno: [L]XX
 * Grupo: YY
 * Alunos:
     - Aluno1 upZZZZZ 

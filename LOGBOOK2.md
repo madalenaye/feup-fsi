@@ -1,5 +1,5 @@
 
-# Trabalho realizado na Semana #3
+# Trabalho realizado nas Semanas #2 e #3
 
 ## Identificação
 

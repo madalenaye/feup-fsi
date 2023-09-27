@@ -1,9 +1,6 @@
-
-Breve descrição do grupo
-
-* Turno: [L]XX
-* Grupo: YY
+* Turno: [L]14
+* Grupo: 01
 * Alunos:
-    - Aluno1 upZZZZZ 
-    - Aluno2 upZZZZZ
-    - Aluno3 upZZZZZ
+    - Madalena Ye up202108795
+    - Manuel Ramos Leite Carvalho Neto up202108744
+    - Matilde Isabel da Silva Simões up202108782

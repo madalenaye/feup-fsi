@@ -22,11 +22,11 @@
 
     * Orval Sanford 
 
-* Ao procurar na base de dados e no motor de pesquisa por CVE’s relacionados com estas versões, encontrámos uma vulnerabilidade referente ao Booster for WooCommerce plugin - 5.4.3 no site https://www.exploit-db.com/exploits/50299  
-
-* Descobrimos que se trata da vulnerabilidade seguinte vulnerabilidade: **CVE2021-34646**. 
+* Ao procurar na base de dados e no motor de pesquisa por CVE’s relacionados com estas versões, encontrámos uma vulnerabilidade referente ao Booster for WooCommerce plugin - 5.4.3 no site https://www.exploit-db.com/exploits/50299 .
 
 * Para a segunda parte da CTF deparámo-nos com algumas dificuldades, no sentido em que demorámos algum tempo a perceber que para dar exploit da CVE era necessário correr o código fornecido pelo site já mencionado em cima. No entanto, depois de termos percebido isso, tudo correu de forma tranquila. 
+
+* Descobrimos que se trata da vulnerabilidade seguinte vulnerabilidade: **CVE2021-34646**. 
 
 * Corremos o código com o primeiro argumento sendo o link do website e o segundo sendo o id default (o id do admin que é 1). 
 

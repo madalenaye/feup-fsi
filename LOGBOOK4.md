@@ -1,4 +1,3 @@
-
 # SEED Labs – Environment Variable and Set-UID Program Lab
 
 ## Tarefa 1: Manipulação de Variáveis de Ambiente
@@ -86,5 +85,4 @@ echo '
 
 * Em particular, corremos ```gcc -fPIC -g -c mylib.c```, ```gcc -shared -o libmylib.so.1.0.1 mylib.o -lc``` e ```echo "LD_PRELOAD=/tmp/libmylib.so.1.0.1" >> env``` para criar a biblioteca partilhada e definir o valor pretendido para a variável de ambiente
 
-* Assim que o script correu no servidor, o ficheiro *new* passou a conter **flag{01ef8d0277833b8af3ac65d5d182f146}** , conforme esperado
-
+* Assim que o script correu no servidor, o ficheiro *new* passou a conter **flag{01ef8d0277833b8af3ac65d5d182f146}**, conforme esperado

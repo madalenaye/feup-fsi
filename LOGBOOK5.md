@@ -176,7 +176,7 @@ with open('badfile', 'wb') as f:
 * o programa está compilado para uma arquitetura de 32 bits e é *little endian*
 * o programa não tem proteção de *RELRO*
 * a *stack* não tem um canário
-* a *stack* tem perimssões de execução
+* a *stack* tem permissões de execução
 * as posições do binário em memória não são aleatorizadas
 * existem segmentos na memória com permissões de leitura (*read*), escrita (*write*) e execução (*execute*)
 

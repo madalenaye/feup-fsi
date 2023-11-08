@@ -253,3 +253,19 @@ with open('badfile', 'wb') as f:
 # CTF 7 
 
 ## Desafio 2
+
+* Ao corrermos ```checksec program```, descobrimos várias informações:
+
+```
+❯ checksec program
+  Arch:     i386-32-little
+  RELRO:    Partial RELRO
+  Stack:    Canary found
+  NX:       NX enabled
+  PIE:      No PIE (0x8048000)
+```
+* o programa está compilado para uma arquitetura de 32 bits e é *little endian*
+* o programa tem proteção de *RELRO*
+* a *stack* tem um canário
+* a *stack* não tem permissões de execução
+* as posições do binário em memória não são aleatorizadas

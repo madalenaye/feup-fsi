@@ -57,11 +57,39 @@ curl http://www.seed-server.com/unsafe_home.php?username=Admin%27+--+&Password=
 
 * Se a função php fosse do tipo *msqli::multiquery* já seria possível realizar mais que uma *query* e assim realizar operações de *insert*, *delete* e *update*
 
+![QueryError](images/logbook8-queryerror.png)
+
 ```php
 if (!$result = $conn->query($sql))
 ```
 
 ## Task 3: SQL Injection Attack on UPDATE Statement
 
+### Task 3.1: Modify your own salary
 
+* Para modifiar o salário da Alice colocamos o username `Alice' -- ` e entramos no seu perfil
 
+* De seguida, usando a query abaixo, alteramos o seu salário, colocando no campo nickname  ```Alice', salary='50000 ```, fazendo com que o valor do salário passasse como uma string, tendo em conta que não existe diferenciação de tipos em sql
+
+```sql
+    $sql = "UPDATE credential SET nickname='$input_nickname',email='$input_email',address='$input_address',PhoneNumber='$input_phonenumber' where ID=$id;"
+```
+
+![Salary](images/logbook8-task3-1.png)
+
+### Task 3.2: Modify other people’ salary
+
+* Para modificar o salário do Boby, usando o perfil da Alice e a mesma query do ponto anterior, colocamos no campo nickname ``` ', salary=1 where name='Boby' -- ```, que nos permitiu alterar o salário do Boby para 1 sem alterar o seu nickname
+
+![Salary2](images/logbook8-task3-2.png)
+
+### Task 3.3: Modify other people’ password
+
+* Como pertendiamos modificar a palavra passe do Boby para *password* e sabiamos que a função de *hash* usanda era *SHA 1*, verificamos que o *hash* da palavra passe *password* era *5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8*
+
+* Usamos o perfil da Alice e a query do ponto anterior, colocamos no campo nickname ``` ', password='5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8' where name='Boby' -- ```, que nos permitiu alterar a palavra passe do Boby para *password* sem alterar o seu nickname
+
+* Tendo em conta as imagens abaixo, com a palavra passe *password* conseguimos fazer login com o username *Boby* e aceder ao seu perfil
+
+![Perfil](images/logbook8-task3-3-1.png)
+![Password](images/logbook8-task3-3-2.png)

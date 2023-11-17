@@ -93,3 +93,29 @@ if (!$result = $conn->query($sql))
 
 ![Perfil](images/logbook8-task3-3-1.png)
 ![Password](images/logbook8-task3-3-2.png)
+
+# CTF 8 - SQL Injection
+
+* Observando o código php, verificamos que a query executada a cada tentativa de login era
+
+```php
+    $query = "SELECT username FROM user WHERE username = '".$username."' AND password = '".$password."'";
+```
+
+* O input que podemos facilmente manipular é o *username*: nesse campo, podemos utilizar os caracteres especiais `'` e `--`, para fechar o campo *username* e para comentar o resto da query, respetivamente
+
+* Para além disto, reparamos que o campo *password* era obrigatório, pelo que o preenchemos com um caracter aleatório
+
+* A query SQL efetivamente executada com a tentativa de login maliciosa foi:
+
+```sql
+SELECT username
+FROM user
+WHERE username = 'admin' -- AND password = 'p'
+```
+
+* Esta query permite fazer login porque seleciona o utilizador cujo *username* é "admin", ignorando o campo *password*
+
+* Conseguimos obter a flag *flag{41245099f013deb9239576781b939f7a}* 
+
+![CTF](images/logbook8-ctf8.png)

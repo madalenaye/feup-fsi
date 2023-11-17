@@ -20,7 +20,7 @@
 
 * No entanto, ao submetermos o *script* no *form*, não nos foi dada a *flag*, pois esta abordagem não explorava nenhuma vulnerabilidade CSRF
 
-* Assim, vimos que o *form* que era utilizado no botão bloqueado *Give the Flag* era o seguinte
+* Assim, vimos que o *form* utilizado no botão bloqueado *Give the Flag* era o seguinte:
 
 ```html
 <form method="POST" action="/request/id/approve" role="form">
@@ -30,7 +30,7 @@
 </form>
 ``` 
 
-* Então, recriamos este código acrescentando o *script* em cima mencionado e submetê-mo-lo
+* Então, recriamos este código, acrescentando o *script* acima mencionado e submetê-mo-lo
 
 ```html	
 <form method="POST" action="http://ctf-fsi.fe.up.pt:5005/request/id/approve" role="form" hidden>
@@ -42,12 +42,13 @@
     </script>
 </form>
 ```
+
 * Ao submetê-lo, fomos supreendidos com um aviso de que não tínhamos permissões para aceder ao recurso pretendido 
 
 ![Forbidden](/images/logbook6-forbidden.png)
 
 * Averiguamos que esse aviso aparecia porque o site tinha autorização para usar JavaScript, então tiramos essa autorização de forma a que não fôssemos nós a clicar no botão e, assim, não criar o aviso
 
-* Desta forma, voltamos a submeter o código que criamos com o *form* e o *script*, submetê-mo-lo, atualizamos a página e obtivemos a *flag* ```flag{aad6d1bf4d22b50c3070ee1280ccfd49}```	
+* Desta forma, voltamos a inserir o código que criamos com o *form* e o *script*, submetê-mo-lo, atualizamos a página e obtivemos a *flag* ```flag{aad6d1bf4d22b50c3070ee1280ccfd49}```	
 
 ![Flag](/images/logbook6-flag.png)

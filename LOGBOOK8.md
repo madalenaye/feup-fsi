@@ -119,6 +119,6 @@ WHERE username = 'admin' -- AND password = 'p'
 
 * Esta *query* permite fazer *login* porque seleciona o utilizador cujo *username* é "admin", ignorando o campo *password*
 
-* Assim, onseguimos obter a *flag* `flag{41245099f013deb9239576781b939f7a}`
+* Assim, conseguimos obter a *flag* `flag{41245099f013deb9239576781b939f7a}`
 
 ![Flag](images/logbook8-flag.png)

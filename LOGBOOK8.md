@@ -80,11 +80,11 @@ $sql = "UPDATE credential SET nickname='$input_nickname',email='$input_email',ad
 
 ### Tarefa 3.2: Modificar o salário de outro
 
-* Para modificar o salário do Boby, usando o perfil da Alice e a mesma *query* do ponto anterior, colocamos no campo nickname `', salary=1 where name='Boby' -- `, o que nos permitiu alterar o salário do Boby para 1 sem alterar o seu *nickname*
+* Para modificar o salário do Boby, usando o perfil da Alice e a mesma *query* do ponto anterior, colocamos no campo *nickname* `', salary=1 where name='Boby' -- `, o que nos permitiu alterar o salário do Boby para 1 sem alterar o seu *nickname*
 
 ![Salário do Bobby](images/logbook8-tarefa3-2.png)
 
-### Task 3.3: Modificar a palavra-passe dos outros
+### Tarefa 3.3: Modificar a palavra-passe dos outros
 
 * Como pretendíamos modificar a palavra-passe do Boby para *password* e sabíamos que a função de *hash* usanda era SHA 1, verificamos que o *hash* da palavra-passe *password* era *5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8*
 
@@ -95,19 +95,20 @@ $sql = "UPDATE credential SET nickname='$input_nickname',email='$input_email',ad
 ![Perfil](images/logbook8-tarefa3-3-1.png)
 ![Password](images/logbook8-tarefa3-3-2.png)
 
-# CTF 8 - SQL Injection
 
-* Observando o código php, verificamos que a query executada a cada tentativa de login era
+# CTF 8
+
+* Observando o código PHP, verificamos que a *query* executada a cada tentativa de *login* era
 
 ```php
-    $query = "SELECT username FROM user WHERE username = '".$username."' AND password = '".$password."'";
+$query = "SELECT username FROM user WHERE username = '".$username."' AND password = '".$password."'";
 ```
 
-* O input que podemos facilmente manipular é o *username*: nesse campo, podemos utilizar os caracteres especiais `'` e `--`, para fechar o campo *username* e para comentar o resto da query, respetivamente
+* O *input* que podemos facilmente manipular é o *username*: nesse campo, podemos utilizar os caracteres especiais `'` e `--`, para fechar o campo *username* e para comentar o resto da query, respetivamente
 
 * Para além disto, reparamos que o campo *password* era obrigatório, pelo que o preenchemos com um caracter aleatório
 
-* A query SQL efetivamente executada com a tentativa de login maliciosa foi:
+* A *query* SQL efetivamente executada com a tentativa de *login* maliciosa foi:
 
 ```sql
 SELECT username
@@ -115,8 +116,8 @@ FROM user
 WHERE username = 'admin' -- AND password = 'p'
 ```
 
-* Esta query permite fazer login porque seleciona o utilizador cujo *username* é "admin", ignorando o campo *password*
+* Esta *query* permite fazer *login* porque seleciona o utilizador cujo *username* é "admin", ignorando o campo *password*
 
-* Conseguimos obter a flag *flag{41245099f013deb9239576781b939f7a}* 
+* Assim, onseguimos obter a *flag* `flag{41245099f013deb9239576781b939f7a}`
 
-![CTF](images/logbook8-ctf8.png)
+![Flag](images/logbook8-flag.png)

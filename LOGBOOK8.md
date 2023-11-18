@@ -18,9 +18,9 @@
 
 ### Tarefa 2.1: Ataque de SQL Injection a partir de uma página web
 
-* Ao abrirmos o URL *www.seed-server.com*, deparamo-nos com a página de *login* e tentamos fazer *login* com o *username* do *Admin*
+* Ao abrirmos o URL *www.seed-server.com*, deparamo-nos com a página de *login* e tentamos fazer *login* com o *username* do Admin
 
-* Analisando o código PHP, verificamos que podíamos realizar um ataque de *SQL Injection* 
+* Analisando o código PHP, verificamos que podíamos realizar um ataque de *SQL Injection* porque o *input* do utilizador não era sanitizado
 
 ```php
 $sql = "SELECT id, name, eid, salary, birth, ssn, phoneNumber, address, email, nickname, Password
@@ -30,7 +30,7 @@ FROM credential
 WHERE name = '$input_uname' and Password = '$hashed_pwd'";
 ```
 
-* Assim, tentamos criar um ataque em que no campo *username* escrevemos `Admin' -- `, de maneira a comentar a verificação da palavra-passe na *query SQL*, e fizemos *login*
+* Assim, tentamos criar um ataque em que no campo *username* escrevemos `Admin' -- `, de maneira a comentar a verificação da palavra-passe na *query* SQL, e fizemos *login*
 
 * Deste modo, tivemos acesso à informação de todos os utilizadores
 
@@ -46,23 +46,23 @@ WHERE name = '$input_uname' and Password = '$hashed_pwd'";
 curl http://www.seed-server.com/unsafe_home.php?username=Admin%27+--+&Password= 
 ```
 
-* Assim, conseguimos obter a informação de todos os utilizadores novamente
+* Assim, conseguimos obter novamente a informação de todos os utilizadores
 
-![Informação](images/logbook8-task2-2.png)
+![Informação](images/logbook8-tarefa2-2.png)
 
 ### Tarefa 2.3: Acrescentar um novo SQL statement
 
 * Analisando o código, verificamos que só é possível realizar uma *query* de cada vez, porque a função de PHP usada é `mysqli::query`
 
-* Assim, isto não permite que o atacante coloque um `;` no final da primeira *query* para executar uma segunda *query*
-
-* Se a função PHP fosse do tipo `mysqli::multiquery` já seria possível realizar mais do que uma *query* e assim realizar operações de *insert*, *delete* e *update*
-
-![Erro](images/logbook8-tarefa2-3.png)
-
 ```php
 if (!$result = $conn->query($sql))
 ```
+
+* Assim, isto não permite que o atacante coloque um `;` no final da primeira *query* para executar uma segunda *query*
+
+![Erro](images/logbook8-tarefa2-3.png)
+
+* Se a função PHP fosse do tipo `mysqli::multiquery` já seria possível realizar mais do que uma *query* e assim realizar operações de *insert*, *delete* e *update*
 
 ## Tarefa 3: Ataque de SQL Injection com um UPDATE Statement
 
@@ -76,19 +76,19 @@ if (!$result = $conn->query($sql))
 $sql = "UPDATE credential SET nickname='$input_nickname',email='$input_email',address='$input_address',PhoneNumber='$input_phonenumber' where ID=$id;"
 ```
 
-![Salário](images/logbook8-tarefa3-1.png)
+![Salário da Alice](images/logbook8-tarefa3-1.png)
 
 ### Tarefa 3.2: Modificar o salário de outro
 
 * Para modificar o salário do Boby, usando o perfil da Alice e a mesma *query* do ponto anterior, colocamos no campo nickname `', salary=1 where name='Boby' -- `, o que nos permitiu alterar o salário do Boby para 1 sem alterar o seu *nickname*
 
-![Salário](images/logbook8-tarefa3-2.png)
+![Salário do Bobby](images/logbook8-tarefa3-2.png)
 
 ### Task 3.3: Modificar a palavra-passe dos outros
 
 * Como pretendíamos modificar a palavra-passe do Boby para *password* e sabíamos que a função de *hash* usanda era SHA 1, verificamos que o *hash* da palavra-passe *password* era *5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8*
 
-* Usamos o perfil da Alice e a *query* do ponto anterior, colocamos no campo *nickname* `', password='5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8' where name='Boby' -- `, o que nos permitiu alterar a palavra-passe do Boby para *password* sem alterar o seu *nickname*
+* Usando o perfil da Alice e a *query* do ponto anterior, colocamos no campo *nickname* `', password='5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8' where name='Boby' -- `, o que nos permitiu alterar a palavra-passe do Boby para *password* sem alterar o seu *nickname*
 
 * Como comprovam as imagens abaixo, com a palavra-passe *password* conseguimos fazer *login* com o *username* Boby e aceder ao seu perfil
 

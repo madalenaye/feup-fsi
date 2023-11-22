@@ -123,7 +123,9 @@ BUT ALL OF THOSE FILMS HAVE HISTORICAL OSCARVOTING PATTERNS AGAINST THEM THE SHA
 
 ![cbc](/images/logbook10-tarefa3-5.png)
 
-* Neste caso, observamos que a imagem resultante do modo de encriptação ECB não está tão semelhante à original como no caso anterior, mas o ficheiro resultante do modo de encriptação CBC continua a parecer mais distante/diferente do orignal
+* Neste caso, observamos que a imagem resultante do modo de encriptação ECB não está tão semelhante à original como no caso anterior, mas o ficheiro resultante do modo de encriptação CBC continua a parecer mais distante/diferente do original
+
+* Assim, concluímos que o modo de encriptação CBC é mais seguro do que o ECB, pois, no caso de uma imagem, o ECB permite que se perceba a forma da imagem original, enquanto que o CBC não permite
 
 
 # CTF 10

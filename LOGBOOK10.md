@@ -8,13 +8,13 @@
 
 * Consultando a página https://en.wikipedia.org/wiki/Trigram, percebemos que o "ytn" corresponderia a "THE" e "vup" a "AND"
 
-* Então, corremos `tr ytnvup THEAND < ciphertext.txt > out.txt`
+* Então, corremos `tr ytnvup THEAND < ciphertext.txt > out.txt` para verificar o resultado desta tentativa de desencriptação parcial
 
 * Ao interpretar o conteúdo do ficheiro `out.txt`, consideramos que nos parecia um texto plausível, pelo que continuamos a tentativa de decifração iterativamente
 
-* De seguida, percebemos, através da leitura do artigo, que "sq" corresponderia a "KS" e passamos para análise de letras individualmente, gerando sempre novos ficheiros `out.txt` e analisando-os
+* De seguida, percebemos, através da leitura do artigo, que "sq" corresponderia a "KS" e passamos para a análise de letras individualmente, gerando sempre novos ficheiros `out.txt` e analisando-os
 
-* Deste modo, chegamos ao comando `tr ytnvupsqxhcmaibferlgdjzokw THEANDKSORMICLFVPGWBYQUJXZ < ciphertext.txt > out.txt` (no qual as letras aparecem pela ordem com que foram descobertas), que resultou no seguinte texto do artigo:
+* Deste modo, chegamos ao comando `tr ytnvupsqxhcmaibferlgdjzokw THEANDKSORMICLFVPGWBYQUJXZ < ciphertext.txt > out.txt` (no qual as letras aparecem pela ordem em que foram descobertas), que resultou no seguinte texto do artigo:
 
 ```
 THE OSCARS TURN ON SUNDAY WHICH SEEMS ABOUT RIGHT AFTER THIS LONG STRANGE AWARDS TRIP THE BAGGER FEELS LIKE A NONAGENARIAN TOO

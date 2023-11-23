@@ -185,6 +185,8 @@ for i in range(16777216):
 		print(flag)
 ```
 
+* O ciclo `for` obtém todos os valores possíveis para a chave (entre 0 e 16777216), convertendo-os para 16 bytes e usando-os na função `dec` para tentar decifrar a mensagem enviada pelo servidor, com recurso ao `nonce`, sendo estes dois valores convertidos da representação hexadecimal para *bytes* pela função `bytes.fromhex`
+
 * Assim, depois de corrermos o *script* e esperarmos algum tempo, obtivemos a *flag*: `flag{e63d6e1db7cdb7093a042a73b847227e}`
 
 ![Flag](/images/logbook10-flag.png)

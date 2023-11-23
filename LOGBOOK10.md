@@ -132,7 +132,7 @@ BUT ALL OF THOSE FILMS HAVE HISTORICAL OSCARVOTING PATTERNS AGAINST THEM THE SHA
 
 * Investigando o ficheiro `cipherspec.py` (que contém os algoritmos de geração de chaves, cifração e decifração), observamos que, apesar de a mensagem ser cifrada utilizando AES-CTR (AES, em modo de operação *counter mode*), a chave é gerada de forma incorreta
 
-* Efetivamente, ainda que a o tamanho da chave sejam 16 *bytes* (`KEYLEN = 16`), apenas os 3 *bytes* (`offset = 3`) menos significativos são aleatórios, enquanto que os restantes 13 *bytes* são `0x00` (`key = bytearray(b'\x00'*(KEYLEN-offset))`)
+* Efetivamente, ainda que o tamanho da chave sejam 16 *bytes* (`KEYLEN = 16`), apenas os 3 *bytes* (`offset = 3`) menos significativos são aleatórios, enquanto que os restantes 13 *bytes* são `0x00` (`key = bytearray(b'\x00'*(KEYLEN-offset))`)
 
 * Ora, este método de geração da chave faz com que, na verdade, apesar de ela ser constituída por 16 *bytes* (e, por isso, à partida, poder tomar qualquer valor entre 0 e 256<sup>16</sup>), esteja limitada a um valor máximo de 256<sup>3</sup>, isto é, esteja compreendida entre 0 e 16777216
 
@@ -187,7 +187,7 @@ for i in range(16777216):
 		print(flag)
 ```
 
-* O ciclo `for` obtém todos os valores possíveis para a chave (entre 0 e 16777216), convertendo-os para 16 bytes e usando-os na função `dec` para tentar decifrar a mensagem enviada pelo servidor, com recurso ao `nonce`, sendo estes dois valores convertidos da representação hexadecimal para *bytes* pela função `bytes.fromhex`
+* O ciclo `for` obtém todos os valores possíveis para a chave (entre 0 e 16777216), convertendo-os para 16 *bytes* e usando-os na função `dec` para tentar decifrar a mensagem enviada pelo servidor, com recurso ao `nonce`, sendo estes dois valores convertidos da representação hexadecimal para *bytes* pela função `bytes.fromhex`
 
 * Assim, depois de corrermos o *script* e esperarmos algum tempo, obtivemos a *flag*: `flag{e63d6e1db7cdb7093a042a73b847227e}`
 

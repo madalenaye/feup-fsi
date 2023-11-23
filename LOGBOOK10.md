@@ -127,3 +127,64 @@ BUT ALL OF THOSE FILMS HAVE HISTORICAL OSCARVOTING PATTERNS AGAINST THEM THE SHA
 
 
 # CTF 10
+
+* Investigando o ficheiro `cipherspec.py` (que contém os algoritmos de geração de chaves, cifração e decifração), observamos que, apesar de a mensagem ser cifrada utilizando AES-CTR (AES, em modo de operação *counter mode*), a chave é gerada de forma incorreta
+
+* Efetivamente, ainda que a o tamanho da chave sejam 16 *bytes* (`KEYLEN = 16`), apenas os 3 *bytes* (`offset = 3`) menos significativos são aleatórios, enquanto que os restantes 13 *bytes* são `0x00` (`key = bytearray(b'\x00'*(KEYLEN-offset))`)
+
+* Ora, este método de geração da chave faz com que, na verdade, apesar de ela ser constituída por 16 *bytes* (e, por isso, à partida, poder tomar qualquer valor entre 0 e 256<sup>16</sup>), esteja limitada a um valor máximo de 256<sup>3</sup>, isto é, esteja compreendida entre 0 e 16777216
+
+* Deste modo, o espaço de procura torna-se suficientemente pequeno ([0, 16777216]) para permitir um ataque por força-bruta
+
+* A *ciphersuite* fornecida pode ser usada para cifrar dados através da função `enc`, que recebe uma chave (`k`) para a cifra, uma mensagem para cifrar (`m`) e um número que só pode ser utilizado uma vez, para inicializar a encriptação (`nonce`)
+
+* De forma análoga, esta *ciphersuite* pode ser usada para decifrar dados através da função `dec`, que recebe a chave (`k`) da cifra, a mensagem para decifrar (`c`) e o número de uso único utilizado no processo de encriptação
+
+* Ao corrermos `nc ctf-fsi.fe.up.pt 6003`, recebemos do servidor a resposta com `nonce: ae1b1491929498abefb5d184220d6ba7` e `ciphertext: 18f90bee1739c36912045bf32b665efb271e772cb9d40e6768bb55be539b7bc2545a25cead77b8`, sendo estes os parâmetros a utilizar no ataque a realizar para obter a *flag*
+
+* Assim, para explorar a vulnerabilidade observada de maneira a quebrar o código, basta recorrer à função `dec` num ataque de força-bruta, percorrendo todos os valores possíveis para a chave (ou seja, entre 0 e 16777216) e tentando, para cada um deles, decifrar a mensagem (`ciphertext`) enviada pelo servidor, passando o `nonce` (recebido do servidor) como parâmetro
+
+* Finalmente, para automatizar este processo de maneira a fazer com que o ataque saiba que encontrou a *flag*, basta comparar o início da tentativa de mensagem decifrada com "flag" (`if (flag[:4] == b"flag"):`) e, se coincidir, imprimir a mensagem decifrada, tendo em conta que esta igualdade significa que a chave foi corretamente encontrada e a mensagem decifrada
+
+* Segundo os princípios acima expostos, desenvolvemos o excerto de código presente abaixo (no final do ficheiro `cipherspec.py`), que tenta encontra a chave (por força-bruta) para decifrar a mensagem recebida do servidor
+
+```py
+#!/usr/bin/python3
+
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+import os
+
+KEYLEN = 16
+
+def gen(): 
+	offset = 3 # Hotfix to make Crypto blazing fast!!
+	key = bytearray(b'\x00'*(KEYLEN-offset)) 
+	key.extend(os.urandom(offset))
+	print(bytes(key))
+	return bytes(key)
+
+def enc(k, m, nonce):
+	cipher = Cipher(algorithms.AES(k), modes.CTR(nonce))
+	encryptor = cipher.encryptor()
+	cph = b""
+	cph += encryptor.update(m)
+	cph += encryptor.finalize()
+	return cph
+
+def dec(k, c, nonce):
+	cipher = Cipher(algorithms.AES(k), modes.CTR(nonce))
+	decryptor = cipher.decryptor()
+	msg = b""
+	msg += decryptor.update(c)
+	msg += decryptor.finalize()
+	return msg
+
+for i in range(16777216):
+	flag = dec(i.to_bytes(16), bytes.fromhex("18f90bee1739c36912045bf32b665efb271e772cb9d40e6768bb55be539b7bc2545a25cead77b8"), bytes.fromhex("ae1b1491929498abefb5d184220d6ba7"))
+	if (flag[:4] == b"flag"):
+		print(flag)
+```
+
+* Assim, depois de corrermos o *script* e esperarmos algum tempo, obtivemos a *flag*: `flag{e63d6e1db7cdb7093a042a73b847227e}`
+
+![Flag](/images/logbook10-flag.png)

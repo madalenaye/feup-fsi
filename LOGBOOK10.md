@@ -146,7 +146,7 @@ BUT ALL OF THOSE FILMS HAVE HISTORICAL OSCARVOTING PATTERNS AGAINST THEM THE SHA
 
 * Assim, para explorar a vulnerabilidade observada de maneira a quebrar o código, basta recorrer à função `dec` num ataque de força-bruta, percorrendo todos os valores possíveis para a chave (ou seja, entre 0 e 16777216) e tentando, para cada um deles, decifrar a mensagem (`ciphertext`) enviada pelo servidor, passando o `nonce` (recebido do servidor) como parâmetro
 
-* Finalmente, para automatizar este processo de maneira a fazer com que o ataque saiba que encontrou a *flag*, basta comparar o início da tentativa de mensagem decifrada com "flag" (`if (flag[:4] == b"flag"):`) e, se coincidir, imprimir a mensagem decifrada, tendo em conta que esta igualdade significa que a chave foi corretamente encontrada e a mensagem decifrada
+* Finalmente, para automatizar este processo de maneira a fazer com que o ataque saiba que encontrou a *flag*, basta comparar o início da tentativa de mensagem decifrada com "flag" (`if (flag[:4] == b"flag"):`) e, se coincidir, imprimir a mensagem decifrada, acabando o loop, tendo em conta que esta igualdade significa que a chave foi corretamente encontrada e a mensagem decifrada. Outra otimização ocorre quando se verifica todas as tentativas de apenas os 3 *bytes* menos significativos da chave, uma vez que os restantes 13 *bytes* são sempre `0x00`
 
 * Segundo os princípios acima expostos, desenvolvemos o excerto de código presente abaixo (no final do ficheiro `cipherspec.py`), que tenta encontra a chave (por força-bruta) para decifrar a mensagem recebida do servidor
 

@@ -15,7 +15,7 @@ O objetivo desta tarefa é criar uma nova Autoridade de Certificação. Para tal
     - Copiámos o ficheiro certificado default para o diretório local usando `cp /usr/lib/ssl/openssl.cnf . ` e descomentámos a linha `unique_subject``
     ![Unique subject](images/logbook11-tarefa1-1.png)
     - Criámos os diretórios `demoCA/` e `demoCA/newcerts`, usando `mkdir -p demoCA/newcerts`
-    - Mudámos para o diretório `demoCA` e, em seguida, criámos a base de dados `index.txt`, usando `touch index.txt`
+    - Em seguida, criámos a base de dados `index.txt`, usando `touch index.txt`
     - Criámos o arquivo `serial`, usando `echo 1000 > serial`
 2. Fazer o setup da CA, utilizando `openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -keyout ca.key -out ca.crt`
     - Neste processo, utilizámos os seguintes dados:
@@ -78,19 +78,19 @@ copy_extensions = copy
 * Comecámos por configurar o servidor de Apache, modificando o ficheiro `bank32_apache_ssl.conf`. Seguindo o exemplo do bank32, o nosso ficheiro configuração ficou o seguinte:
 ```
 <VirtualHost *:443> 
-    DocumentRoot /var/www/fsi2022
-    ServerName www.fsi2022.com
-    ServerAlias www.fsi2022A.com
-    ServerAlias www.fsi2022B.com
+    DocumentRoot /var/www/ye2023
+    ServerName www.ye2023.com
+    ServerAlias www.ye2023A.com
+    ServerAlias www.ye2023B.com
     DirectoryIndex index.html
     SSLEngine On 
-    SSLCertificateFile /certs/fsi2022.crt
-    SSLCertificateKeyFile /certs/fsi2022.key
+    SSLCertificateFile /certs/ye2023.crt
+    SSLCertificateKeyFile /certs/ye2023.key
 </VirtualHost>
 
 <VirtualHost *:80> 
-    DocumentRoot /var/www/fsi2022
-    ServerName www.fsi2022.com
+    DocumentRoot /var/www/ye2023
+    ServerName www.ye2023.com
     DirectoryIndex index_red.html
 </VirtualHost>
 

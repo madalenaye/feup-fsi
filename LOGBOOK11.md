@@ -35,7 +35,7 @@ O objetivo desta tarefa é criar uma nova Autoridade de Certificação. Para tal
     openssl rsa -in ca.key -text -noout
     ```
 
-* Podemos verificar qque é um certificado CA, visto que na secção `Certificate > Data > X509v3 extensions > X509v3 Basic Constraints` existe um atributo/propriedade `CA  que está a verdadeiro:
+* Podemos verificar qque é um certificado CA, visto que na secção `Certificate > Data > X509v3 extensions > X509v3 Basic Constraints` existe um atributo/propriedade `CA`  que está a verdadeiro:
 
     ![Propriedade CA](images/logbook11-tarefa1-2.png)
 
@@ -59,10 +59,79 @@ O objetivo desta tarefa é criar uma nova Autoridade de Certificação. Para tal
 
 ## Tarefa 3 - "Generating a Certificate for your server"
 
-Para gerar um certificado para o nosso próprio servidor www.ye2023.com, foi necessário correr o seguinte comando:
+Para gerar um certificado para o nosso próprio servidor www.ye2023.com, foi necessário:
+1. No ficheiro `openssl.cnf`, descomentar a linha:
 ```
+[CA_default]
+...
+copy_extensions = copy
+```
+2. Criar o certificado, usando o comando `openssl ca -config openssl.cnf -policy policy_anything -md sha256 -days 3650 -in server.csr -out server.crt -batch -cert ca.crt -keyfile ca.key`
+    * Foi criado um `server.crt` para o servidor assinado pela CA.
+    ![Server.crt](images/logbook11-tarefa3-1.png)
 
+3. Após correr o comando `openssl x509 -in server.crt -text -noout`, podemos verificar que os nomes alternativos estão incluídos no conteúdo do certificado
+    ![Nomes alternativos](images/logbook11-tarefa3-2.png)
+
+## Tarefa 3 - "Deploying Certificate in an Apache-Based HTTPS Website"
+
+* Comecámos por configurar o servidor de Apache, modificando o ficheiro `bank32_apache_ssl.conf`. Seguindo o exemplo do bank32, o nosso ficheiro configuração ficou o seguinte:
 ```
+<VirtualHost *:443> 
+    DocumentRoot /var/www/fsi2022
+    ServerName www.fsi2022.com
+    ServerAlias www.fsi2022A.com
+    ServerAlias www.fsi2022B.com
+    DirectoryIndex index.html
+    SSLEngine On 
+    SSLCertificateFile /certs/fsi2022.crt
+    SSLCertificateKeyFile /certs/fsi2022.key
+</VirtualHost>
+
+<VirtualHost *:80> 
+    DocumentRoot /var/www/fsi2022
+    ServerName www.fsi2022.com
+    DirectoryIndex index_red.html
+</VirtualHost>
+
+# Set the following gloal entry to suppress an annoying warning message
+ServerName localhost
+```
+* Começámos o servidor de Apache, usando `service apache2 start` na shell do docker
+* Acedemos ao site `https://ye2023.com`, mas verificamos que a ligação era insegura, ou seja, não estava encriptada
+![Site](images/logbook11-tarefa4-1.png)
+
+* Para tornar a nossa ligação segura, adicionamos o certificado CA que geramos às autoridades no browser, em `about:preferences#privacy -> Certificates -> View Certificates -> Authorities -> Import`, e verificamos que a ligação passou a ser segura:
+![Autorização](images/logbook11-tarefa4-2.png)
+![Autorizado](images/logbook11-tarefa4-3.png)
+
+## Tarefa 5 - "Launching a Man-In-The-Middle Attack"
+
+* Nesta tarefa, escolhemos o `example.com` para realizar as etapas.
+1. Comecámos por adicionar a seguinte linha ao `/etc/hosts`:
+    ```
+    10.9.0.80   www.example.com
+    ```
+2. Mudámos o ficheiro `bank32_apache_ssl.conf` para:
+    ```html
+    <VirtualHost *:443>
+    DocumentRoot /var/www/ye2023
+    ServerName www.example.com
+    ServerAlias www.ye2023A.com
+    ServerAlias www.ye2023B.com
+    DirectoryIndex index.html
+    SSLEngine On
+    SSLCertificateFile /certs/ye2023.crt
+    SSLCertificateKeyFile /certs/ye2023.key
+    </VirtualHost>
+
+    <VirtualHost *:80>
+    DocumentRoot /var/www/ye2023
+    ServerName www.example.com
+    DirectoryIndex index_red.html
+    </VirtualHost>
+    ```
+    
 # CTF 11
 
 * Depois de analisarmos o enunciado do *ctf* e o ficheiro *chanllenge.py* verificamos que se tratava de uma cifra baseada em *RSA*, que assenta que no problema matemático da factorização de números inteiros

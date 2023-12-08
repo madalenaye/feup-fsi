@@ -131,6 +131,48 @@ ServerName localhost
     DirectoryIndex index_red.html
     </VirtualHost>
     ```
+3. Se tentarmos entrar na página `www.example.com`, o site não poderá ser acessado sem avisos, já que estamos a usar o mesmo certificado que usamos para ye2023.com. Este certificado garante apenas uma navegação segura para www.ye2023.com, www.ye2023A.com e www.ye2023B.com.
+
+## Tarefa 6
+Nesta tarefa queremos provar que, uma vez comprometida a chave privada do CA, conseguimos gerar vários certificados para diferentes websites sob a mesma CA e explorar vários utilizadores.
+
+* Como a nossa máquina já confia na CA, qualquer certificado que gerarmos usando esta CA também será confiável. Portanto, podemos criar, por exemplo, um certificado para example.com sob a nossa CA e acessar o site sem nenhum aviso do navegador.
+
+1. Criámos um novo pedido de certificado para `www.example.com`:
+    ```
+    openssl req -newkey rsa:2048 -sha256 
+    > -keyout server.key -out server.csr 
+    > -subj "/CN=www.example.com/O=example ORG/C=PT" 
+    > -passout pass:dees
+    ```
+
+2. Gerámos um novo certificado:
+    ```
+    openssl ca -config openssl.cnf -policy policy_anything -md sha256 -days 3650 -in server.csr -out server.crt -batch -cert ca.crt -keyfile ca.key
+    ```
+3. Movemos os ficheiros server.crt e server.key para image-www/certs/.
+4. Modificámos o ficheiro `bank32_apache_ssl.conf` para:
+    ```
+    <VirtualHost *:443> 
+    DocumentRoot /var/www/fsi2022
+    ServerName www.example.com
+    DirectoryIndex index.html
+    SSLEngine On 
+    SSLCertificateFile /certs/server.crt
+    SSLCertificateKeyFile /certs/server.key
+    </VirtualHost>
+
+    <VirtualHost *:80> 
+    DocumentRoot /var/www/fsi2022
+    ServerName www.example.com
+    DirectoryIndex index_red.html
+    </VirtualHost>
+    ```
+6. Usámos `dcbuild` e `dcup` para reiniciar a imagem do docker e `service apache2 start` para iniciar o servidor apache dentro de um docker shell.
+
+* Conseguimos então acessar ao site sem quaisquer problemas:
+
+
     
 # CTF 11
 

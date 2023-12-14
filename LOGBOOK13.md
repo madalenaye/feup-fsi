@@ -2,17 +2,168 @@
 
 ## Tarefa 1: Usar *Scapy* para fazer *Sniff* e *Spoof* de Pacotes
 
+* Para configurarmos e inciarmos os *containers*, corremos `dcbuild` e `dcup`
+
+* Em primeiro lugar, corremos `ifconfig` e procuramos o endereço IP `10.9.0.1` para descobrir o nome da *interface* de rede: `br-85326ea37364`
+
+![Interface](/images/logbook13-tarefa1-1.png)
+
+* De seguida, dentro da pasta partilhada `volumes`, criamos o ficheiro `mycode.py` com o código abaixo
+
+```python
+#!/usr/bin/env python3
+
+from scapy.all import *
+
+a = IP()
+a.show()
+```
+
+* Ao correr o *script* dentro do *container*, o *output* foi o seguinte
+
+![IP](/images/logbook13-tarefa1-2.png)
+
 ### Tarefa 1.1: *Sniffing* de Pacotes
+
+* Para esta tarefa, criamos (dentro do mesmo diretório partilhado) o ficheiro `sniffer.py` com o seguinte código, de maneira a fazer *sniff* dos pacotes na *interface* `br-85326ea37364` e a imprimi-los
+
+```python
+#!/usr/bin/env python3
+from scapy.all import *
+
+def print_pkt(pkt):
+	pkt.show()
+
+pkt = sniff(iface='br-85326ea37364', prn=print_pkt)
+```
 
 #### Tarefa 1.1A
 
+* Tornamos o programa executável com o comando `chmod a+x sniffer.py` e corremo-lo com privilégios *root*, ficando à espera que os outros *containers* enviassem pacotes para que pudessem ser *sniffed*
+
+* Então, no *container* A, corremos `ping 10.9.0.6` para que fossem trocados pacotes com o *container* B
+
+* Assim, no *container* em que corria o `sniffer.py`, conseguimos observer os pacotes trocados, conforme comprovam as capturas de ecrã abaixo
+
+![Pacote](/images/logbook13-tarefa1-1a-1.png)
+![Pacote](/images/logbook13-tarefa1-1a-2.png)
+
+* As camadas dos pacotes *sniffed* são quatro: ARP, Ethernet, IP e ICMP
+
+* A camada ARP ... TODO
+
+* A camada Ethernet ... TODO
+
+* A camada IP ... TODO
+
+* A camada ICMP ... TODO
+
+* Ao fazer `su seed` para tentar correr o `sniffer.py` sem privilégios *root*, observamos que a operação não nos é permitida
+
+![OperationNotPermitted](/images/logbook13-tarefa1-1a-3.png)
+
 #### Tarefa 1.1B
+
+* Para capturar apenas o pacote ICMP, alteramos a chamada à função `sniff`, acrescentando-lhe o parâmetro `filter='icmp'`, resultando na seguinte linha de código: `pkt = sniff(iface='br-85326ea37364', filter='icmp' prn=print_pkt)`
+
+* Para enviar pacotes ICMP, bastou-nos correr o comando `ping 10.9.0.6` no *container* A
+
+* Conforme mostram as capturas de ecrã abaixo, conseguimos fazer *spoofing* dos pacotes ICMP
+
+![ICMP](/images/logbook13-tarefa1-1b-1.png)
+![ICMP](/images/logbook13-tarefa1-1b-2.png)
+
+* Para capturar qualquer pacote TCP que vem de um endereço IP específico (`10.9.0.5`) e com um porto de destino número 23, editamos o filtro para `filter='tcp and src host 10.9.0.5 and port dst 23'`
+
+* Para enviar pacotes TCP, tivemos que correr `telnet 10.9.0.6` no *container* A, dado que o endereço IP do *container* A é `10.9.0.5` e o protocolo `telnet` envia pacotes para o porto número 23
+
+* Tal como demonstra a capturas de ecrã anexa, conseguimos fazer *spoofing* dos pacotes TCP com origem no endereço IP `10.9.0.5` e destino no porto número 23 (`telent`)
+
+![TCP](/images/logbook13-tarefa1-1b-3.png)
+
+* Para capturar quaisquer pacotes que vêm de ou vão para uma rede específica (`128.230.0.0/16`), modificamos o filtro para `filter='net 128.230.0.0'`
+
+* Para enviar pacotes de e para esta rede, corremos `ping 128.230.0.1` no *container* A
+
+* Como comprovam as capturas de ecrã presentes abaixo, conseguimos fazer *spoofing* dos pacotes com origem e destino na rede `128.230.0.0`
+
+![NET](/images/logbook13-tarefa1-1b-4.png)
+![NET](/images/logbook13-tarefa1-1b-5.png)
+![NET](/images/logbook13-tarefa1-1b-6.png)
 
 ### Tarefa 1.2: *Spoofing* de Pacotes ICMP
 
+* Para fazer *spoofing* de um pacote ICMP com um endereço IP de origem arbitrário, bastou adaptar o código fornecido no guião, adicionando-lhe a linha `a.src = '8.8.8.8'` (sendo este endereço IP de origem do pacote *spoofed*)
+
+* Deste modo, criamos o ficheiro `spoofer.py` com o seguinte código:
+
+```python
+#!/usr/bin/env python3
+from scapy.all import *
+
+a = IP()
+a.src = '8.8.8.8'
+a.dst = '10.9.0.6'
+
+b = ICMP()
+
+p = a/b
+
+send(p)
+
+p.show()
+```
+
+* A linha `a.src = '8.8.8.8'` acrescentada ao *script* faz com que o pacote ICMP criado tenha `8.8.8.8` como endereço de origem, tal como pretendido
+
+* A última linha (`p.show()`) serve apenas para imprimir o pacote enviado, presente na captura de ecrã abaixo, que comprova que o pacote foi enviado
+
+![Spoofing](/images/logbook13-tarefa1-2-1.png)
+
+* A prova de que a resposta ao pacote foi enviada para o endereço IP especificado é visível no *log* do Wireshark anexo abaixo, no qual se apresentam os endereços IP de origem e de destino dos pacotes ICMP trocados: o pacote *spoofed* (com "origem" `8.8.8.8` e destino `10.9.0.6`) e a resposta (com origem `10.9.0.6` e destino `8.8.8.8`)
+
+![Wireshark](/images/logbook13-tarefa1-2-2.png)
+
 ### Tarefa 1.3: *Traceroute*
 
+* De maneira a simular o funcionamento da ferramente `traceroute`, criamos um ficheiro `traceroute.py` com o seguinte código:
+
+```python
+#!/usr/bin/env python3
+from scapy.all import *
+
+i = 1
+
+while (True):
+	a = IP()
+	a.dst = '8.8.8.8'
+	a.ttl = i
+	b = ICMP()
+	r = sr1(a/b, timeout=5, verbose=0)
+	if (r is not None):
+		print(i, r.src)
+		if (r.src == '8.8.8.8'):
+			break
+	i += 1
+```
+
+* De forma semelhante ao efetuado na tarefa anterior, este *script* cria um pacote ICMP, atribuindo-lhe `8.8.8.8` como endereço de destino
+
+* O pacote é enviado através da chamada à função `sr1`, que aguarda pela resposta (os parâmetros indicam que o *timeout* deve ser de 5 segundos e que a função não deve imprimir qualquer *output*)
+
+* O ciclo `while` incrementa, em cada iteração, o valor da variável `i`, que é atribuída ao *Time-To-Live* (TTL) do pacote, ou seja, indica por quantos *routers* é que o pacote pode passar
+
+* Por cada resposta recebida, o programa imprime o endereço IP do *router* que a enviou (`print(i, r.src)`)
+
+* Finalmente, o ciclo termina quando for recebida uma resposta cuja origem é o destino especificado inicialmente para o pacote: `8.8.8.8`
+
+* Assim, ao correr `./traceroute.py`, verificamos que o pacote enviado passou por 13 *routers* (incluindo a origem e o destino) entre a máquina virtual e o destino `8.8.8.8`, sendo esta a distância entre ambas as máquinas
+
+![Traceroute](/images/logbook13-tarefa1-3.png)
+
 ### Tarefa 1.4: *Sniffing* e depois *Spoofing*
+
+*
 
 
 # CTF 13

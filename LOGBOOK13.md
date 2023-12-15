@@ -163,7 +163,66 @@ while (True):
 
 ### Tarefa 1.4: *Sniffing* e depois *Spoofing*
 
-*
+* De modo a cumprir o pretendido nesta tarefa - fazer *sniffing* e depois *spoofing* de pacotes de rede -, criamos o ficheiro `task4.py`, adaptando os códigos desenvolvidos nas tarefas anteriores
+
+* Em primeiro lugar, editamos o filtro presente no *script* de *sniffing* para se limitar a filtrar pacotes ICMP *echo request*, substituindo o filtro anteriormente presente por `filter='icmp[icmptype] == icmp-echo'`
+
+* Em segundo lugar, criamos uma função `send_pkt` baseada no *script* de *spoofing* cujo objetivo é criar um pacote do tipo ICMP *echo reply* que simule ser uma resposta a um pacote ICMP *echo request*
+
+* Para isto, basta manter todos os dados do pacote recebido e enviar um novo pacote com os meus dados, trocando apenas a origem e o destino, para que seja uma resposta
+
+* Finalmente, basta invocar a função `send_pkt` sempre que for *sniffed* um pacote que cumpra os critérios do filtro, tal como é feito na última linha do código abaixo
+
+```python
+#!/usr/bin/env python3
+from scapy.all import *
+
+def send_pkt(pkt):
+	a = IP()
+	a.src = pkt[1].dst
+	a.dst = pkt[1].src
+	
+	b = ICMP()
+	b.type = 0
+	b.id = pkt[2].id
+	b.seq = pkt[2].seq
+	
+	load = pkt[3].load
+	
+	p = a/b/load
+	send(p)
+	p.show()
+	
+pkt = sniff(iface='br-85326ea37364', filter='icmp[icmptype] == icmp-echo', prn=send_pkt)
+```
+
+* Para testar o código desenvolvido, fizemos `ping` de três endereços IP diferentes, a partir do *container* A
+
+* Ao fazer `ping 1.2.3.4` (um endereço inexistente na Internet), observamos que o *sniffing* e o *spoofing* foram bem-sucedidos, tendo em conta que foram recebidas respostas aos pacotes enviados, apesar de não existir nenhuma máquina alojada no endereço `1.2.3.4`
+
+* As imagens abaixo demonstram os resultados obtidos pelo comando `ping` (as respostas), um pacote *spoofed* enviado (com origem `1.2.3.4` e destino `10.9.0.5`) e o *log* do Wireshark com os pacotes ICMP *request* e *reply* trocados
+
+![Ping1](/images/logbook13-tarefa1-4-1.png)
+![Pacote1](/images/logbook13-tarefa1-4-2.png)
+![Wireshark1](/images/logbook13-tarefa1-4-3.png)
+
+* Ao correr `ping 10.9.0.99` (um endereço inexistente na LAN), verificamos que, apesar de o *script* de *sniffing* e *spoofing* estar a correr, nenhum pacote passa no filtro de *sniffing* e, por isso, nenhum pacote é *spoofed*, pelo que não são enviadas respostas aos pacotes ICMP *request* enviados pelo comando `ping`, conforme comprovam as duas primeiras capturas de ecrã
+
+* Isto deve-se ao facto de a máquina alojada no *container* A não saber como chegar ao endereço de destino, ou seja, não conhecer o caminho pelo qual os pacotes devem passar desde o endereço de origem (`10.9.0.5`) até ao de destino (`10.9.0.99`), tal como é possível verificar no *log* do Wireshark apresentado, no qual apenas se vêem pacotes ARP a solicitar que seja indicado à máquina em `10.9.0.5` qual o endereço MAC correspondente ao IP do destino (`10.9.0.99`)
+
+![Ping2](/images/logbook13-tarefa1-4-4.png)
+![Pacote2](/images/logbook13-tarefa1-4-5.png)
+![Wireshark2](/images/logbook13-tarefa1-4-6.png)
+
+* Ao realizar `ping 8.8.8.8` (um endereço existente na Internet), constatamos que os pacotes pretendidos são *sniffed* e *spoofed*, dado que as respostas esperadas chegam ao *container* A
+
+* As respostas chegam em duplicado uma vez que o endereço `8.8.8.8` corresponde a uma máquina existente na Internet, pelo que, em primeiro lugar, são recebidas as respostas resultantes do *script* desenvolvido e, em segundo lugar, chegam as resposts "reais" enviadas pela máquina alojada no endereço de destino
+
+* De facto, é possível verificar que o *spoofing* é realizado através da segunda imagem anexa e que as respostas chegam em duplicado através das outras duas fotografias (os resultados do `ping` e o *log* do Wireshark)
+
+![Ping3](/images/logbook13-tarefa1-4-7.png)
+![Pacote3](/images/logbook13-tarefa1-4-8.png)
+![Wireshark3](/images/logbook13-tarefa1-4-9.png)
 
 
 # CTF 13

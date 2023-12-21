@@ -19,7 +19,7 @@ a = IP()
 a.show()
 ```
 
-* Ao correr o *script* dentro do *container*, o *output* foi o seguinte
+* Ao correr o *script* dentro do *container*, o *output* foi o seguinte, ou seja, os campos do pacote IP criado
 
 ![IP](/images/logbook13-tarefa1-2.png)
 
@@ -50,13 +50,13 @@ pkt = sniff(iface='br-85326ea37364', prn=print_pkt)
 
 * As camadas dos pacotes *sniffed* são quatro: ARP, Ethernet, IP e ICMP
 
-* A camada ARP ... TODO
+* O protocolo ARP (*Address Resolution Protocol*) é responsável por permitir às máquinas da rede mapearem os endereços IP das máquinas com que querem comunicar nos respetivos endereços físicos (endereços MAC)
 
-* A camada Ethernet ... TODO
+* A camada Ethernet define os padrões de comunicação entre os dispositivos na rede local (LAN), controla os acessos à mesma e garante que a transmissão da informação é bem-sucedida
 
-* A camada IP ... TODO
+* O protocolo IP (*Internet Protocol*) serve para identificar as máquinas ligadas à rede e, dessa forma, permitir o encaminhamento dos pacotes a transmitir através das rotas apropriadas
 
-* A camada ICMP ... TODO
+* A camada ICMP (*Internet Control Message Protocol*) - parte do conjunto de protocolos TCP/IP - envia as mensagens de controlo que definem o tipo do pacote a transmitir
 
 * Ao fazer `su seed` para tentar correr o `sniffer.py` sem privilégios *root*, observamos que a operação não nos é permitida
 
@@ -68,7 +68,7 @@ pkt = sniff(iface='br-85326ea37364', prn=print_pkt)
 
 * Para enviar pacotes ICMP, bastou-nos correr o comando `ping 10.9.0.6` no *container* A
 
-* Conforme mostram as capturas de ecrã abaixo, conseguimos fazer *spoofing* dos pacotes ICMP
+* Conforme mostram as capturas de ecrã abaixo, conseguimos fazer *sniffing* dos pacotes ICMP
 
 ![ICMP](/images/logbook13-tarefa1-1b-1.png)
 ![ICMP](/images/logbook13-tarefa1-1b-2.png)
@@ -77,7 +77,7 @@ pkt = sniff(iface='br-85326ea37364', prn=print_pkt)
 
 * Para enviar pacotes TCP, tivemos que correr `telnet 10.9.0.6` no *container* A, dado que o endereço IP do *container* A é `10.9.0.5` e o protocolo `telnet` envia pacotes para o porto número 23
 
-* Tal como demonstra a capturas de ecrã anexa, conseguimos fazer *spoofing* dos pacotes TCP com origem no endereço IP `10.9.0.5` e destino no porto número 23 (`telent`)
+* Tal como demonstra a captura de ecrã anexa, conseguimos fazer *sniffing* dos pacotes TCP com origem no endereço IP `10.9.0.5` e destino no porto número 23 (`telent`)
 
 ![TCP](/images/logbook13-tarefa1-1b-3.png)
 
@@ -85,7 +85,7 @@ pkt = sniff(iface='br-85326ea37364', prn=print_pkt)
 
 * Para enviar pacotes de e para esta rede, corremos `ping 128.230.0.1` no *container* A
 
-* Como comprovam as capturas de ecrã presentes abaixo, conseguimos fazer *spoofing* dos pacotes com origem e destino na rede `128.230.0.0`
+* Como comprovam as capturas de ecrã presentes abaixo, conseguimos fazer *sniffing* dos pacotes com origem e destino na rede `128.230.0.0`
 
 ![NET](/images/logbook13-tarefa1-1b-4.png)
 ![NET](/images/logbook13-tarefa1-1b-5.png)
@@ -93,7 +93,7 @@ pkt = sniff(iface='br-85326ea37364', prn=print_pkt)
 
 ### Tarefa 1.2: *Spoofing* de Pacotes ICMP
 
-* Para fazer *spoofing* de um pacote ICMP com um endereço IP de origem arbitrário, bastou adaptar o código fornecido no guião, adicionando-lhe a linha `a.src = '8.8.8.8'` (sendo este endereço IP de origem do pacote *spoofed*)
+* Para fazer *spoofing* de um pacote ICMP com um endereço IP de origem arbitrário, bastou adaptar o código fornecido no guião, adicionando-lhe a linha `a.src = '8.8.8.8'` (sendo este o endereço IP de origem do pacote *spoofed*)
 
 * Deste modo, criamos o ficheiro `spoofer.py` com o seguinte código:
 
@@ -169,7 +169,7 @@ while (True):
 
 * Em segundo lugar, criamos uma função `send_pkt` baseada no *script* de *spoofing* cujo objetivo é criar um pacote do tipo ICMP *echo reply* que simule ser uma resposta a um pacote ICMP *echo request*
 
-* Para isto, basta manter todos os dados do pacote recebido e enviar um novo pacote com os meus dados, trocando apenas a origem e o destino, para que seja uma resposta
+* Para isto, basta manter todos os dados do pacote recebido e enviar um novo pacote com os mesmos dados, trocando apenas a origem e o destino, para que seja uma resposta
 
 * Finalmente, basta invocar a função `send_pkt` sempre que for *sniffed* um pacote que cumpra os critérios do filtro, tal como é feito na última linha do código abaixo
 
